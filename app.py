@@ -1,5 +1,5 @@
 import streamlit as st
-from groq import Gorq
+from groq import gorq
 
 st.set_page_config(
     page_title="Cardiac Care",
