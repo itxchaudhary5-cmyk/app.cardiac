@@ -1,8 +1,13 @@
 import streamlit as st
+from groq import Groq
 
 st.set_page_config(
     page_title="Cardiac Care",
     page_icon="🫀"
+)
+
+client = Groq(
+    api_key=st.secrets["GROQ_API_KEY"]
 )
 
 st.title("🫀 Cardiac Care")
@@ -13,39 +18,37 @@ st.info(
     "diagnose or replace professional medical care."
 )
 
-st.header("🚨 Emergency Symptom Checker")
+st.header("🤖 AI Heart Health Assistant")
 
-st.write("Select the symptoms the person is experiencing:")
+question = st.text_area(
+    "Ask a general heart health question:"
+)
 
-chest_pain = st.checkbox("Chest pain or pressure")
-breathing = st.checkbox("Difficulty breathing")
-fainting = st.checkbox("Fainting or loss of consciousness")
-palpitations = st.checkbox("Very fast or irregular heartbeat")
-weakness = st.checkbox("Sudden severe weakness")
+if st.button("Ask AI"):
 
-if st.button("Check Symptoms"):
+    if question.strip():
 
-    emergency_symptoms = [
-        chest_pain,
-        breathing,
-        fainting
-    ]
-
-    if any(emergency_symptoms):
-        st.error(
-            "⚠️ These symptoms may require urgent medical attention. "
-            "Seek emergency medical care immediately."
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a heart health education assistant. "
+                        "Give general educational information only. "
+                        "Do not diagnose or prescribe treatment. "
+                        "For possible emergencies, advise the user "
+                        "to seek immediate professional medical help."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": question
+                }
+            ]
         )
 
-    elif palpitations or weakness:
-        st.warning(
-            "⚠️ Medical assessment is recommended, especially if "
-            "symptoms are new, severe, or getting worse."
-        )
+        st.write(response.choices[0].message.content)
 
     else:
-        st.success(
-            "No selected high-risk symptom was detected by this "
-            "basic checker. If you feel unwell or symptoms develop, "
-            "seek medical advice."
-        )
+        st.warning("Please enter a question.")
